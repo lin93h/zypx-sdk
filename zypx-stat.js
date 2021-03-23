@@ -1,6 +1,5 @@
-
 (function () {
-    var domain = "http://static.fjrst.cn/monitor/v1/"; // 请求域名
+    var domain = "https://static.fjrst.cn/monitor/v1/"; // 请求域名
     var appId = ""; // 应用ID
     var appSecret = ""; // 应用密钥
     var idCard = ""; // 身份证号（学员）
@@ -57,17 +56,161 @@
         },
         // 结束上报
         over: function () {
-            studyEnd()
+            handleStudyEnd()
         }
     }
 
-    // 关闭窗口触发请求
-    $(window).bind('beforeunload', function () {
-        // 只有在标识变量is_confirm不为false时，才弹出确认提示
+    // 关闭窗口前触发学习结束上报
+    if(window.addEventListener) {
+        window.addEventListener("beforeunload", handleStudyEnd, false);
+    } else if(window.attachEvent) {
+        window.attachEvent("onbeforeunload", handleStudyEnd);
+    } else {
+        if(window.onbeforeunload) window.onbeforeunload = handleStudyEnd;
+    }
+
+    // 开始操作
+    function handleStart(callback) {
+        getToken(callback);
+    }
+
+    // 开启监听
+    function handleWatch(callback) {
+        clearInterval(timer);
+        heartBeat(callback);
+        timer = setInterval(function () {
+            heartBeat(callback);
+        }, 3000)
+    }
+
+    // 结束操作
+    function handleStop() {
+        clearInterval(timer);
+    }
+
+    // 获取token
+    function getToken(callback) {
+        // 执行关闭请求置为true
+        flag = true;
+        http.ajaxRequest({
+            url: domain + "token",
+            method: "post",
+            dataType: 'json',//返回json数据格式
+            data: {
+                idCard: "3501241980xxxxx",
+                appId: "eb7200f7fc45460d96507c4fa03b3934",
+                appSecret: "xxxxxxxx完成申请流程后可查看",
+            },
+            success: function (res) {
+                if(res.code == 0) {
+                    token = res.access_token;
+                }
+                callback(res)
+            },
+            error: function (err) {
+                callback({
+                    code: 500,
+                    msg: 'token获取失败'
+                })
+            }
+        })
+    }
+
+    // 自动执行监听
+    function handleAutoExec(callback) {
+        getToken(function (res) {
+            callback(res)
+            if(res.code == 500) {
+                handleWatch(callback)
+            }
+        })
+    }
+
+    // 心跳包
+    function heartBeat(callback) {
+        http.ajaxRequest({
+            url: domain + "heartbeat",
+            method: 'get',
+            data: {
+                token: token,
+                courseId: courseId,
+            },
+            success: function (res) {
+                // 正常
+                if(res.code == 0) {
+                    callback(res)
+                }
+                // 需要输入验证码
+                if(res.code == 1) {
+                    handleStop();
+                    handleDialogTrigger(true)
+                    callback(res)
+                }
+                // token验证失败
+                if(res.code == 410) {
+                    handleStop();
+                    alert(res.msg || 'token验证失败')
+                    callback(res)
+                }
+            },
+            error: function (err) {
+                callback({
+                    code: 500,
+                    msg: '心跳包异常'
+                })
+            }
+        })
+    }
+
+    // 验证码提交
+    function handleCheckCode(callback) {
+        http.ajaxRequest({
+            url: domain + "checkCode",
+            data: {
+                token: token,
+                code: code,
+            },
+            success: function (res) {
+                handleDialogTrigger()
+                if(res.code == 0) {
+                    if(!control) {
+                        handleAutoExec(callback)
+                    }
+                } else {
+                    alert(res.msg)
+                }
+                callback(res)
+            },
+            error: function (err) {
+                handleDialogTrigger()
+                callback({
+                    code: 500,
+                    msg: "验证失败"
+                })
+            }
+        })
+    }
+
+    // 学习结果上报
+    function handleStudyEnd() {
         if(flag) {
-            studyEnd()
+            http.ajaxRequest({
+                url: domain + "studyEnd",
+                data: {
+                    token: token,
+                    courseId: courseId,
+                },
+                success: function (res) {
+                    if(res.code == 0) {
+
+                    }
+                },
+                error: function (err) {
+
+                }
+            })
         }
-    })
+    }
 
     // 添加html、绑定事件
     function handleHtmlAndEvent() {
@@ -101,167 +244,38 @@
         }
         document.getElementsByTagName('head')[0].appendChild(styleNode);
 
-        // 获取dom
+        // 关闭按钮dom
         var closeBtn = document.getElementsByClassName('zypx-message-box__headerbtn')
+        // 提交按钮dom
         var submitBtn = document.getElementById('submit-btn')
+        // 输入框dom
         var inputDom = document.getElementById('code-value')
-        var wrapperDom = document.getElementsByClassName('zypx-message-box__wrapper')
+        
         // 绑定关闭事件
-        closeBtn[0].onclick = function() {
-            wrapperDom[0].style.cssText = 'visibility:hidden'
+        closeBtn[0].onclick = function () {
+            handleDialogTrigger()
         }
         // 绑定验证码提交事件
-        submitBtn.onclick = function() {
+        submitBtn.onclick = function () {
             // 获取赋值验证码
             code = inputDom.value
             // 提交验证码
-            handleCheckCode(function(res) {
+            handleCheckCode(function (res) {
                 if(res.code == 0) {
-                    wrapperDom[0].style.cssText = 'visibility:hidden'
+                    handleDialogTrigger()
                 }
             })
         }
     }
-
-    // 开始操作
-    function handleStart(callback) {
-        getToken(callback);
-    }
-
-    // 开启监听
-    function handleWatch(callback) {
-        clearInterval(timer);
-        heartBeat(callback);
-        timer = setInterval(function () {
-            heartBeat(callback);
-        }, 3000)
-    }
-
-    // 结束操作
-    function handleStop() {
-        clearInterval(timer);
-    }
-
-    // 获取token
-    function getToken(callback) {
-        // 执行关闭请求置为true
-        flag = true;
-        $.ajax({
-            url: domain + "token",
-            type: "post",
-            dataType: 'json',//返回json数据格式
-            data: {
-                idCard: "3501241980xxxxx",
-                appId: "eb7200f7fc45460d96507c4fa03b3934",
-                appSecret: "xxxxxxxx完成申请流程后可查看",
-            },
-            success: function (res) {
-                if(res.code == 0) {
-                    token = res.access_token;
-                }
-                callback(res)
-            },
-            error: function (err) {
-                callback({
-                    code: 500,
-                    msg: 'token获取失败'
-                })
-            }
-        })
-    }
-
-    // 自动执行监听
-    function handleAutoExec(callback) {
-        getToken(function (res) {
-            if(res.code == 500) {
-                handleWatch(callback)
-            } else {
-                callback(res)
-            }
-        })
-    }
-
-    // 心跳包
-    function heartBeat(callback) {
-        $.ajax({
-            url: domain + "heartbeat",
-            data: {
-                token: token,
-                courseId: courseId,
-            },
-            success: function (res) {
-                // 正常
-                if(res.code == 0) {
-                    callback(res)
-                }
-                // 需要输入验证码
-                if(res.code == 1) {
-                    handleStop();
-                    $('#dialog').css({ 'visibility': 'inherit' })
-                    callback(res)
-                }
-                // token验证失败
-                if(res.code == 410) {
-                    handleStop();
-                    alert(res.msg || 'token验证失败')
-                    callback(res)
-                }
-            },
-            error: function (err) {
-                callback({
-                    code: 500,
-                    msg: '心跳包异常'
-                })
-            }
-        })
-    }
-
-    // 验证码提交
-    function handleCheckCode(callback) {
-        $.ajax({
-            url: domain + "checkCode",
-            data: {
-                token: token,
-                code: code,
-            },
-            success: function (res) {
-                if(res.code == 0) {
-                    handleStart(callback)
-                    handleWatch(callback)
-                } else {
-                    alert(res.msg)
-                }
-                callback(res)
-            },
-            error: function (err) {
-                // clearInterval(timer)
-                // handleStart(callback)
-                // handleWatch(callback)
-                callback({
-                    code: 500,
-                    msg: "验证失败"
-                })
-            }
-        })
-    }
-
-    // 学习结果上报
-    function studyEnd() {
-        $.ajax({
-            url: domain + "studyEnd",
-            data: {
-                token: token,
-                courseId: courseId,
-            },
-            success: function (res) {
-                if(res.code == 0) {
-
-                }
-            },
-            error: function (err) {
-
-            }
-        })
+    
+    // 显示/关闭验证码弹窗
+    function handleDialogTrigger(flag) {
+        var msgDom = document.getElementsByClassName('zypx-message-box__wrapper')
+        if(flag) {
+            msgDom[0].style.cssText = 'visibility:inherit'
+        } else {
+            msgDom[0].style.cssText = 'visibility:hidden'
+        }
     }
 
     var styleStr = `.zypx-message-box__wrapper {
@@ -395,5 +409,111 @@
         transition: opacity .2s;
         font-size: 12px;
     }`
-})()
 
+    // ajax封装
+    var http = {};
+    http.ajaxRequest = function (options) {
+        options = options || {};  //调用函数时如果options没有指定，就给它赋值{},一个空的Object
+        options.method = (options.method || "POST").toUpperCase();/// 请求格式GET、POST，默认为GET
+        options.dataType = options.dataType || "json";    //响应数据格式，默认json
+        options.contentType = options.contentType || 'application/json;charset=UTF-8';
+        options.headers = options.headers || {};
+        options.data = options.data || null;
+        options.timeout = options.timeout || 10000;
+        options.async = options.async || true;
+        // var params = formatParams(options.data);//options.data请求的数据
+
+        //请求的数据
+        var params = [];
+        if(options.data && typeof options.data === 'object') {
+            for(let key in options.data) {
+                params.push(key + '=' + options.data[key]);
+            }
+            //处理缓存问题
+            params.push(("v=" + Math.random()).replace(".", ""));
+            params = params.join("&");
+        }
+
+
+
+        //添加公共请求头
+        var authorization = localStorage.getItem("authorization");
+        if(authorization) {
+            options.headers["authorization"] = authorization;
+        }
+
+        var xhr;
+
+        //考虑兼容性
+        if(window.XMLHttpRequest) {
+            xhr = new XMLHttpRequest();
+        } else if(window.ActiveObject) {//兼容IE6以下版本
+            xhr = new ActiveXobject('Microsoft.XMLHTTP');
+        }
+
+        //设置超时
+        // (options.timeout > 0) &&(xhr.timeout = options.timeout);
+        //启动并发送一个请求
+        if(options.method === 'GET') {
+            xhr.open("GET", options.url + "?" + params, options.async);
+            xhr.send(null);
+        } else if(options.method == "POST") {
+            xhr.open("POST", options.url, options.async);
+            xhr.setRequestHeader("x-requested-with", "XMLHttpRequest")
+            xhr.setRequestHeader("cache-control", "no-cache");
+            //Content-type数据请求的格式
+            xhr.setRequestHeader("Content-type", options.contentType);
+
+            for(let key in options.headers) {
+                xhr.setRequestHeader(key, options.headers[key]);  //设置请求头
+            }
+
+
+            if(options.contentType.toLowerCase().indexOf("json") > 0) {
+                if(typeof options.data === 'object') {
+                    try {
+                        options.data = JSON.stringify(options.data);
+                    } catch(e) { }
+                }
+                //设置表单提交时的内容类型
+                xhr.send(options.data);
+            } else {
+                //设置表单提交时的内容类型
+                xhr.send(params);
+            }
+
+        }
+
+        //    设置有效时间
+        setTimeout(function () {
+            if(xhr.readySate != 4) {
+                xhr.abort();
+            }
+        }, options.timeout)
+        xhr.onreadystatechange = function () {
+
+            var status = xhr.status;
+            var isSuccess = status >= 200 && status < 300 || status === 304;
+            if(xhr.readyState == 4) {
+                if(isSuccess) {
+                    console.log(xhr.responseXML)
+                    if(options.dataType === 'json') {
+                        var res = JSON.parse(xhr.responseText);
+                        if(res.code == 401) {
+                            // localStorage.getItem("access_token");
+                            window.location.href = 'account'
+                            return;
+                        }
+                        options.success && options.success(res, status, xhr.responseXML);
+                    } else {
+                        options.success && options.success(xhr.responseText, status, xhr.responseXML);
+                    }
+                    // options.success && options.success(xhr.responseText,status,xhr.responseXML);
+
+                } else {
+                    options.error && options.error(status);
+                }
+            }
+        }
+    }
+})()

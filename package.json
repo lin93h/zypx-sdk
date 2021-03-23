@@ -1,0 +1,22 @@
+{
+  "name": "zypx-sdk",
+  "version": "1.0.0",
+  "description": "线上学习监管sdk",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lin93h/zypx-sdk.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lin93h/zypx-sdk/issues"
+  },
+  "homepage": "https://github.com/lin93h/zypx-sdk#readme",
+  "devDependencies": {
+    "ws": "^7.4.4"
+  }
+}
