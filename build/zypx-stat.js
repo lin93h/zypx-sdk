@@ -154,6 +154,7 @@
                 }
             },
             error: function (err) {
+                handleDialogTrigger(true)
                 callback({
                     code: 500,
                     msg: '心跳包异常'
@@ -182,7 +183,6 @@
                 callback(res)
             },
             error: function (err) {
-                handleDialogTrigger()
                 callback({
                     code: 500,
                     msg: "验证失败"
@@ -227,6 +227,9 @@
                     <div class="zypx-input">
                         <input type="text" id="code-value" class="zypx-input__inner" placeholder="请输入">
                     </div>
+                    <div class="zypx-tip-box">
+                        <span class="zypx-tip-box__text">请输入验证码</span>
+                    </div>
                 </div>
                 <div class="zypx-message-box__btns">
                     <button id="submit-btn" class="zypx-button">提交</button>
@@ -259,22 +262,37 @@
         submitBtn.onclick = function () {
             // 获取赋值验证码
             code = inputDom.value
-            // 提交验证码
-            handleCheckCode(function (res) {
-                if(res.code == 0) {
-                    handleDialogTrigger()
-                }
-            })
+            if(code) {
+                // 提交验证码
+                handleCheckCode(function (res) {
+                    if(res.code == 0) {
+                        handleDialogTrigger()
+                    }
+                })
+            } else {
+                handleTriggerError(true)
+            }
         }
     }
     
     // 显示/关闭验证码弹窗
     function handleDialogTrigger(flag) {
-        var msgDom = document.getElementsByClassName('zypx-message-box__wrapper')
+        var boxDom = document.getElementsByClassName('zypx-message-box__wrapper')
+        handleTriggerError()
         if(flag) {
-            msgDom[0].style.cssText = 'visibility:inherit'
+            boxDom[0].style.cssText = 'visibility:inherit'
         } else {
-            msgDom[0].style.cssText = 'visibility:hidden'
+            boxDom[0].style.cssText = 'visibility:hidden'
+        }
+    }
+
+    // 显示/隐藏错误提示
+    function handleTriggerError(flag) {
+        var textDom = document.getElementsByClassName('zypx-tip-box__text')
+        if(flag) {
+            textDom[0].style.cssText = 'visibility:inherit'
+        } else {
+            textDom[0].style.cssText = 'visibility:hidden'
         }
     }
 
@@ -408,6 +426,15 @@
         align-items: center;
         transition: opacity .2s;
         font-size: 12px;
+    }
+    .zypx-tip-box {
+        height: 24px;
+        line-height: 24px;
+        color: red;
+        font-size: 12px;
+    }
+    .zypx-tip-box__text {
+        visibility: hidden;
     }`
 
     // ajax封装

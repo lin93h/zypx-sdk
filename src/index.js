@@ -12,28 +12,28 @@ $(document).ready(function () {
         }
     })
 
-    var zypxWs = window.zypxWs;
-    zypxWs.init({
-        appId: "wss11111111111111",
-        appSecret: "ws222222222222",
-    })
+    // var zypxWs = window.zypxWs;
+    // zypxWs.init({
+    //     appId: "wss11111111111111",
+    //     appSecret: "ws222222222222",
+    // })
     
     //== 手动控制内容 ==//
     // 开始播放
     $("#start").on('click', function () {
-        zypxWs.close()
-        // zypx.start(function(res) {
-        //     console.log('token反馈：', res.msg)
-        //     if(res.code == 500) {
-        //         zypx.watch(function(res) {
-        //             console.log('监听：', res)
-        //             if(res.code == 1) {
+        // zypxWs.close()
+        zypx.start(function(res) {
+            console.log('token反馈：', res.msg)
+            if(res.code == 500) {
+                zypx.watch(function(res) {
+                    console.log('监听：', res)
+                    if(res.code == 1) {
                         
-        //             }
-        //             $('#msg-con').append("<div>" + res.msg + "</div>")
-        //         })
-        //     }
-        // })
+                    }
+                    $('#msg-con').append("<div>" + res.msg + "</div>")
+                })
+            }
+        })
         
         $("#stop").show();
         $("#gif").show();

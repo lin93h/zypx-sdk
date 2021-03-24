@@ -17,6 +17,11 @@
   },
   "homepage": "https://github.com/lin93h/zypx-sdk#readme",
   "devDependencies": {
+    "browser-sync": "^2.26.14",
+    "gulp": "^4.0.2",
+    "gulp-rename": "^2.0.0",
+    "gulp-uglify": "^3.0.2",
+    "gulp-watch": "^5.0.1",
     "ws": "^7.4.4"
   }
 }
