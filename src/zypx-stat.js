@@ -1,14 +1,15 @@
 (function () {
-    var domain = "https://static.fjrst.cn/monitor/v1/"; // 请求域名
-    var appId = ""; // 应用ID
-    var appSecret = ""; // 应用密钥
-    var idCard = ""; // 身份证号（学员）
-    var courseId = ""; // 课程id
-    var control = false; // 是否控制执行
-    var token = ""; // 用户token
-    var code = ""; // 验证码
-    var timer = null; // 定时器
-    var flag = false; // 标记服务是否开启
+    var domain = "https://static.fjrst.cn/monitor/v1/", // 请求域名
+        appId = "", // 应用ID
+        appSecret = "", // 应用密钥
+        idCard = "", // 身份证号（学员）
+        courseId = "", // 课程id
+        control = false, // 是否控制执行
+        token = "", // 用户token
+        code = "", // 验证码
+        timer = null, // 定时器
+        flag = false, // 标记服务是否开启
+        selector = '' // 自定义选择器 
 
     // 页面加载完成后执行节点变动操作
     window.onload = function () {
@@ -24,15 +25,21 @@
             idCard = params.idCard
             courseId = params.courseId
             control = params.control
+            selector = params.selector
+            params.callback && params.callback({ 
+                appId, 
+                appSecret, 
+                idCard, 
+                courseId, 
+                control,
+                msg: "插件初始化完成"
+            })
             if(!control) {
                 // 用户未控制，自动执行
                 _this.autoExec(params.callback || function (res) {
                     // 默认回调，避免用户未设置回调函数异常报错
                     // console.log("默认回调",res)
                 })
-            } else {
-                // 用户手动执行，初始化成功回调
-                params.callback && params.callback({ appId, appSecret, idCard, courseId, control })
             }
         },
         autoExec: function (callback) {
@@ -108,6 +115,7 @@
                 callback(res)
             },
             error: function (err) {
+                // handleDialogTrigger(true)
                 callback({
                     code: 500,
                     msg: 'token获取失败'
@@ -154,7 +162,7 @@
                 }
             },
             error: function (err) {
-                handleDialogTrigger(true)
+                // handleDialogTrigger(true)
                 callback({
                     code: 500,
                     msg: '心跳包异常'
@@ -216,6 +224,15 @@
     function handleHtmlAndEvent() {
         // 插入弹窗dom
         var div = document.createElement("div");
+        if(selector) {
+            if(selector[0] == '#') {
+                div.id = selector.substring(1)
+            } else if(selector[0] == '.'){
+                div.className = selector.substring(1)
+            } else {
+                div.id = selector
+            }
+        }
         div.innerHTML = `<div class="zypx-message-box__wrapper">
             <div class="zypx-message-box">
                 <div class="zypx-message-box__header">
@@ -296,6 +313,111 @@
         }
     }
 
+    // ajax封装
+    var http = {};
+    http.ajaxRequest = function (options) {
+        options = options || {};  //调用函数时如果options没有指定，就给它赋值{},一个空的Object
+        options.method = (options.method || "POST").toUpperCase();/// 请求格式GET、POST，默认为GET
+        options.dataType = options.dataType || "json";    //响应数据格式，默认json
+        options.contentType = options.contentType || 'application/json;charset=UTF-8';
+        options.headers = options.headers || {};
+        options.data = options.data || null;
+        options.timeout = options.timeout || 10000;
+        options.async = options.async || true;
+        // var params = formatParams(options.data);//options.data请求的数据
+
+        //请求的数据
+        var params = [];
+        if(options.data && typeof options.data === 'object') {
+            for(let key in options.data) {
+                params.push(key + '=' + options.data[key]);
+            }
+            //处理缓存问题
+            params.push(("v=" + Math.random()).replace(".", ""));
+            params = params.join("&");
+        }
+
+        //添加公共请求头
+        var authorization = localStorage.getItem("authorization");
+        if(authorization) {
+            options.headers["authorization"] = authorization;
+        }
+
+        var xhr;
+
+        //考虑兼容性
+        if(window.XMLHttpRequest) {
+            xhr = new XMLHttpRequest();
+        } else if(window.ActiveObject) {//兼容IE6以下版本
+            xhr = new ActiveXobject('Microsoft.XMLHTTP');
+        }
+
+        //设置超时
+        // (options.timeout > 0) &&(xhr.timeout = options.timeout);
+        //启动并发送一个请求
+        if(options.method === 'GET') {
+            xhr.open("GET", options.url + "?" + params, options.async);
+            xhr.send(null);
+        } else if(options.method == "POST") {
+            xhr.open("POST", options.url, options.async);
+            xhr.setRequestHeader("x-requested-with", "XMLHttpRequest")
+            xhr.setRequestHeader("cache-control", "no-cache");
+            //Content-type数据请求的格式
+            xhr.setRequestHeader("Content-type", options.contentType);
+
+            for(let key in options.headers) {
+                xhr.setRequestHeader(key, options.headers[key]);  //设置请求头
+            }
+
+            if(options.contentType.toLowerCase().indexOf("json") > 0) {
+                if(typeof options.data === 'object') {
+                    try {
+                        options.data = JSON.stringify(options.data);
+                    } catch(e) { }
+                }
+                //设置表单提交时的内容类型
+                xhr.send(options.data);
+            } else {
+                //设置表单提交时的内容类型
+                xhr.send(params);
+            }
+
+        }
+
+        //    设置有效时间
+        setTimeout(function () {
+            if(xhr.readySate != 4) {
+                xhr.abort();
+            }
+        }, options.timeout)
+        xhr.onreadystatechange = function () {
+
+            var status = xhr.status;
+            var isSuccess = status >= 200 && status < 300 || status === 304;
+            if(xhr.readyState == 4) {
+                if(isSuccess) {
+                    console.log(xhr.responseXML)
+                    if(options.dataType === 'json') {
+                        var res = JSON.parse(xhr.responseText);
+                        if(res.code == 401) {
+                            // localStorage.getItem("access_token");
+                            window.location.href = 'account'
+                            return;
+                        }
+                        options.success && options.success(res, status, xhr.responseXML);
+                    } else {
+                        options.success && options.success(xhr.responseText, status, xhr.responseXML);
+                    }
+                    // options.success && options.success(xhr.responseText,status,xhr.responseXML);
+
+                } else {
+                    options.error && options.error(status);
+                }
+            }
+        }
+    }
+
+    // 弹窗内联样式
     var styleStr = `.zypx-message-box__wrapper {
         position: fixed;
         left: 0;
@@ -436,111 +558,4 @@
     .zypx-tip-box__text {
         visibility: hidden;
     }`
-
-    // ajax封装
-    var http = {};
-    http.ajaxRequest = function (options) {
-        options = options || {};  //调用函数时如果options没有指定，就给它赋值{},一个空的Object
-        options.method = (options.method || "POST").toUpperCase();/// 请求格式GET、POST，默认为GET
-        options.dataType = options.dataType || "json";    //响应数据格式，默认json
-        options.contentType = options.contentType || 'application/json;charset=UTF-8';
-        options.headers = options.headers || {};
-        options.data = options.data || null;
-        options.timeout = options.timeout || 10000;
-        options.async = options.async || true;
-        // var params = formatParams(options.data);//options.data请求的数据
-
-        //请求的数据
-        var params = [];
-        if(options.data && typeof options.data === 'object') {
-            for(let key in options.data) {
-                params.push(key + '=' + options.data[key]);
-            }
-            //处理缓存问题
-            params.push(("v=" + Math.random()).replace(".", ""));
-            params = params.join("&");
-        }
-
-
-
-        //添加公共请求头
-        var authorization = localStorage.getItem("authorization");
-        if(authorization) {
-            options.headers["authorization"] = authorization;
-        }
-
-        var xhr;
-
-        //考虑兼容性
-        if(window.XMLHttpRequest) {
-            xhr = new XMLHttpRequest();
-        } else if(window.ActiveObject) {//兼容IE6以下版本
-            xhr = new ActiveXobject('Microsoft.XMLHTTP');
-        }
-
-        //设置超时
-        // (options.timeout > 0) &&(xhr.timeout = options.timeout);
-        //启动并发送一个请求
-        if(options.method === 'GET') {
-            xhr.open("GET", options.url + "?" + params, options.async);
-            xhr.send(null);
-        } else if(options.method == "POST") {
-            xhr.open("POST", options.url, options.async);
-            xhr.setRequestHeader("x-requested-with", "XMLHttpRequest")
-            xhr.setRequestHeader("cache-control", "no-cache");
-            //Content-type数据请求的格式
-            xhr.setRequestHeader("Content-type", options.contentType);
-
-            for(let key in options.headers) {
-                xhr.setRequestHeader(key, options.headers[key]);  //设置请求头
-            }
-
-
-            if(options.contentType.toLowerCase().indexOf("json") > 0) {
-                if(typeof options.data === 'object') {
-                    try {
-                        options.data = JSON.stringify(options.data);
-                    } catch(e) { }
-                }
-                //设置表单提交时的内容类型
-                xhr.send(options.data);
-            } else {
-                //设置表单提交时的内容类型
-                xhr.send(params);
-            }
-
-        }
-
-        //    设置有效时间
-        setTimeout(function () {
-            if(xhr.readySate != 4) {
-                xhr.abort();
-            }
-        }, options.timeout)
-        xhr.onreadystatechange = function () {
-
-            var status = xhr.status;
-            var isSuccess = status >= 200 && status < 300 || status === 304;
-            if(xhr.readyState == 4) {
-                if(isSuccess) {
-                    console.log(xhr.responseXML)
-                    if(options.dataType === 'json') {
-                        var res = JSON.parse(xhr.responseText);
-                        if(res.code == 401) {
-                            // localStorage.getItem("access_token");
-                            window.location.href = 'account'
-                            return;
-                        }
-                        options.success && options.success(res, status, xhr.responseXML);
-                    } else {
-                        options.success && options.success(xhr.responseText, status, xhr.responseXML);
-                    }
-                    // options.success && options.success(xhr.responseText,status,xhr.responseXML);
-
-                } else {
-                    options.error && options.error(status);
-                }
-            }
-        }
-    }
 })()
