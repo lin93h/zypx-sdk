@@ -18,6 +18,9 @@ $(document).ready(function () {
     }
   })
 
+  /**
+   * 执行websocket
+   */
   // var zypxWs = window.zypxWs;
   // zypxWs.init({
   //     appId: "wss11111111111111",
@@ -27,36 +30,42 @@ $(document).ready(function () {
   //== 手动控制内容 ==//
   // 开始播放
   $("#start").on('click', function () {
-    // zypxWs.close()
-    var zypxWs = window.zypxWs;
-    zypxWs.init({
-        appId: "wss11111111111111",
-        appSecret: "ws222222222222",
-    })
-    // zypx.start(function (res) {
-    //   console.log('token反馈：', res.msg)
-    //   if(res.code == 500) {
-    //     zypx.watch(function (res) {
-    //       console.log('监听：', res)
-    //       if(res.code == 1) {
+    
+    zypx.start(function (res) {
+      console.log('token反馈：', res.msg)
+      if(res.code == 500) {
+        zypx.watch(function (res) {
+          console.log('监听：', res)
+          if(res.code == 1) {
 
-    //       }
-    //       $('#msg-con').append("<div>" + res.msg + "</div>")
-    //     })
-    //   }
+          }
+          $('#msg-con').append("<div>" + res.msg + "</div>")
+        })
+      }
+    })
+
+    /**
+     * websocket
+     */
+    // var zypxWs = window.zypxWs;
+    // zypxWs.init({
+    //     appId: "wss11111111111111",
+    //     appSecret: "ws222222222222",
     // })
 
     $("#stop").show();
     $("#gif").show();
     $("#start").hide();
   })
+
   // 停止播放
   $("#stop").on('click', function () {
-    zypxWs.init({
-      appId: "wss3333333333",
-      appSecret: "ws444444444",
-    })
     zypx.stop()
+    // zypxWs.init({
+    //   appId: "wss3333333333",
+    //   appSecret: "ws444444444",
+    // })
+    // zypxWs.close()
     $("#stop").hide();
     $("#gif").hide();
     $('#msg-con').html("");

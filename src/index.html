@@ -2,93 +2,93 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>课件播放</title>
-    <link rel="stylesheet" href="index.css">
-    <script src="jquery-1.11.1.min.js"></script>
-    <script src="zypx-stat.js"></script>
-    <script src="index.js"></script>
-    <script src="socket.js"></script>
-    <!-- <link rel="stylesheet" href="zypx-stat.css"> -->
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课件播放</title>
+  <link rel="stylesheet" href="index.css">
+  <script src="jquery-1.11.1.min.js"></script>
+  <script src="zypx-stat.js"></script>
+  <script src="index.js"></script>
+  <script src="socket.js"></script>
+  <!-- <link rel="stylesheet" href="zypx-stat.css"> -->
 </head>
 
 <body>
-    <div id="app">
-        <div class="main">
-            <div class="win">
-                <div class="demo-img">
-                    <img id="gif" src="0e03b7da-db9e-4819-ba10-9016ddfdaed3" alt="">
-                </div>
-                <div id="msg-con"></div>
-            </div>
-            <div class="desc">
-                <div class="btn-box">
-                    <button class="op-btn" id="start">开始播放</button>
-                    <button class="op-btn" id="stop">停止播放</button>
-                </div>
-                <div class="title"></div>
-                <div class="desc-list">
-                    <div class="desc-item"></div>
-                    <div class="desc-item long-item"></div>
-                    <div class="desc-item"></div>
-                    <div class="desc-item"></div>
-                    <div class="desc-item long-item"></div>
-                    <div class="desc-item"></div>
-                    <div class="desc-item long-item"></div>
-                    <div class="desc-item long-item"></div>
-                </div>
-            </div>
+  <div id="app">
+    <div class="main">
+      <div class="win">
+        <div class="demo-img">
+          <img id="gif" src="0e03b7da-db9e-4819-ba10-9016ddfdaed3" alt="">
         </div>
-        <div class="menu-list">
-            <ul>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-            </ul>
+        <div id="msg-con"></div>
+      </div>
+      <div class="desc">
+        <div class="btn-box">
+          <button class="op-btn" id="start">开始播放</button>
+          <button class="op-btn" id="stop">停止播放</button>
         </div>
+        <div class="title"></div>
+        <div class="desc-list">
+          <div class="desc-item"></div>
+          <div class="desc-item long-item"></div>
+          <div class="desc-item"></div>
+          <div class="desc-item"></div>
+          <div class="desc-item long-item"></div>
+          <div class="desc-item"></div>
+          <div class="desc-item long-item"></div>
+          <div class="desc-item long-item"></div>
+        </div>
+      </div>
     </div>
-    <!-- <div class="zypx-message-box__wrapper">
-        <div class="zypx-message-box">
-            <div class="zypx-message-box__header">
-                <div class="zypx-message-box__title">输入验证码</div>
-                <button class="zypx-message-box__headerbtn">X</button>
-            </div>
-            <div class="zypx-message-box__content">
-                <div class="zypx-alert">学员通过“职补小助手”小程序进行人脸验证后可查看验证码。</div>
-                <div class="zypx-input">
-                    <input type="text" id="code-value" class="zypx-input__inner" placeholder="请输入">
-                </div>
-                <div class="zypx-tip-box">
-                    <span class="zypx-tip-box__text">请输入验证码</span>
-                </div>
-            </div>
-            <div class="zypx-message-box__btns">
-                <button id="submit-btn" class="zypx-button">提交</button>
-            </div>
+    <div class="menu-list">
+      <ul>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+        <li></li>
+      </ul>
+    </div>
+  </div>
+  <!-- <div class="zypx-message-box__wrapper">
+    <div class="zypx-message-box">
+      <div class="zypx-message-box__header">
+        <div class="zypx-message-box__title">输入验证码</div>
+        <button class="zypx-message-box__headerbtn">X</button>
+      </div>
+      <div class="zypx-message-box__content">
+        <div class="zypx-alert">学员通过“职补小助手”小程序进行人脸验证后可查看验证码。</div>
+        <div class="zypx-input">
+          <input type="text" id="code-value" class="zypx-input__inner" placeholder="请输入">
         </div>
-    </div> -->
+        <div class="zypx-tip-box">
+          <span class="zypx-tip-box__text">请输入验证码</span>
+        </div>
+      </div>
+      <div class="zypx-message-box__btns">
+        <button id="submit-btn" class="zypx-button">提交</button>
+      </div>
+    </div>
+  </div> -->
 </body>
 <script type="text/javascript">
-    // var zypx = window.zypx;
-    // zypx.init({
-    //     appId: "这是appid",
-    //     appSecret: "应用密钥",
-    //     idCard: "身份证号（学员）",
-    //     courseId: "课程id",
-    //     control: true,
-    //     callback: function (res) {
-    //         console.log("初始化回调:", res)
-    //     }
-    // })
+  var zypx = window.zypx;
+  zypx.init({
+    appId: "这是appid",
+    appSecret: "应用密钥",
+    idCard: "身份证号（学员）",
+    courseId: "课程id",
+    control: true,
+    callback: function (res) {
+      console.log("初始化回调:", res)
+    }
+  })
 </script>
 
 </html>
