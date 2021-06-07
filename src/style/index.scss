@@ -1,0 +1,84 @@
+.rank-project-dtl-wrapper {
+  padding-bottom: 80px;
+
+  .item {
+    margin-bottom: rem(30);
+  }
+  .item-header {
+    padding: rem(30);
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    background: #dfdfdf;
+    .tag {
+      flex-shrink: 0;
+    }
+    .name {
+      flex-grow: 1;
+      font-size: rem(32);
+      font-weight: bold;
+      margin-left: rem(20);
+    }
+  }
+  table {
+    background: #fff;
+    border: rem(1) solid #eee;
+    width: 100%;
+    th {
+      padding: rem(20);
+    }
+    td {
+      border: rem(1) solid #eee;
+      padding: rem(20);
+      font-size: rem(24);
+      .info {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        text-align: center;
+        .num {
+          color: blue;
+          font-weight: bold;
+        }
+        .red {
+          color: #F56C6C;
+        }
+      }
+    }
+    .name {
+      width: rem(260);
+      text-align: right;
+    }
+    .value {
+      color: #999;
+      .txt {
+        word-break:break-all;
+      }
+    }
+  }
+  .today-table {
+    td {
+      width: 33%;
+    }
+    .num {
+      font-size: rem(30);
+    }
+  }
+  .footer-con {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #fff;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    border-top: rem(1) solid #eee;
+    .btn {
+      width: rem(240);
+      margin: 0 rem(30);
+    }
+  }
+}

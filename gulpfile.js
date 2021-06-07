@@ -3,6 +3,7 @@ var gulp = require('gulp'),
     rename = require('gulp-rename'),
     uglify = require('gulp-uglify'),
     watch = require('gulp-watch'),
+    sass = require('gulp-sass'),
     browserSync = require('browser-sync'),
     reload = browserSync.reload
 
@@ -14,6 +15,12 @@ gulp.task('build', function() {
         .pipe(babel())
         .pipe(uglify())
         .pipe(rename({ extname: '.min.js'}))
+        .pipe(gulp.dest(DEST))
+})
+
+gulp.task('sass', function() {
+    return gulp.src('src/style/index.scss')
+        .pipe(sass())
         .pipe(gulp.dest(DEST))
 })
 

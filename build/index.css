@@ -1,0 +1,63 @@
+.rank-project-dtl-wrapper {
+  padding-bottom: 80px; }
+  .rank-project-dtl-wrapper .item {
+    margin-bottom: rem(30); }
+  .rank-project-dtl-wrapper .item-header {
+    padding: rem(30);
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    background: #dfdfdf; }
+    .rank-project-dtl-wrapper .item-header .tag {
+      flex-shrink: 0; }
+    .rank-project-dtl-wrapper .item-header .name {
+      flex-grow: 1;
+      font-size: rem(32);
+      font-weight: bold;
+      margin-left: rem(20); }
+  .rank-project-dtl-wrapper table {
+    background: #fff;
+    border: rem(1) solid #eee;
+    width: 100%; }
+    .rank-project-dtl-wrapper table th {
+      padding: rem(20); }
+    .rank-project-dtl-wrapper table td {
+      border: rem(1) solid #eee;
+      padding: rem(20);
+      font-size: rem(24); }
+      .rank-project-dtl-wrapper table td .info {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: center;
+        text-align: center; }
+        .rank-project-dtl-wrapper table td .info .num {
+          color: blue;
+          font-weight: bold; }
+        .rank-project-dtl-wrapper table td .info .red {
+          color: #F56C6C; }
+    .rank-project-dtl-wrapper table .name {
+      width: rem(260);
+      text-align: right; }
+    .rank-project-dtl-wrapper table .value {
+      color: #999; }
+      .rank-project-dtl-wrapper table .value .txt {
+        word-break: break-all; }
+  .rank-project-dtl-wrapper .today-table td {
+    width: 33%; }
+  .rank-project-dtl-wrapper .today-table .num {
+    font-size: rem(30); }
+  .rank-project-dtl-wrapper .footer-con {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background: #fff;
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    border-top: rem(1) solid #eee; }
+    .rank-project-dtl-wrapper .footer-con .btn {
+      width: rem(240);
+      margin: 0 rem(30); }

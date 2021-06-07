@@ -2,14 +2,22 @@ $(document).ready(function () {
   // 初始化数据
   var zypx = window.zypx;
   zypx.init({
-    appId: "这是appid",
-    appSecret: "应用密钥",
-    idCard: "身份证号（学员）",
-    courseId: "课程id",
+    appId: "fjhb",
+    appSecret: "fjhb2021",
+    idCard: "350123199310072351",
+    courseId: "fjhb001",
+    selector: '#coustom-dialog', // 自定义弹窗类名
     control: true, // 是否手动控制执行（true:手动控制 false:自动执行）
     callback: function (res) {
-      console.log("监控回调:", res)
-      $('#msg-con').append("<div>" + res.msg + "</div>")
+      console.log("【监控回调globalCallback】:", res)
+      $('#msg-con').append("<div>" + res.msg + new Date() + "</div>")
+      if(res.code == 410) {
+        zypx.stop()
+        $("#stop").hide();
+        $("#gif").hide();
+        $('#msg-con').html("");
+        $("#start").show();
+      }
       if(!res.control) {
         $("#stop").show();
         $("#gif").show();
@@ -33,13 +41,13 @@ $(document).ready(function () {
     
     zypx.start(function (res) {
       console.log('token反馈：', res.msg)
-      if(res.code == 500) {
+      if(res.code == 0) {
         zypx.watch(function (res) {
-          console.log('监听：', res)
-          if(res.code == 1) {
+          // console.log('【监听】：', res)
+          // if(res.code == 1) {
 
-          }
-          $('#msg-con').append("<div>" + res.msg + "</div>")
+          // }
+          // $('#msg-con').append("<div>" + res.msg + new Date() + "</div>")
         })
       }
     })

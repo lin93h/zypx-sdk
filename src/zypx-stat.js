@@ -1,5 +1,5 @@
 (function () {
-  var domain = "https://static.fjrst.cn/monitor/v1/", // 请求域名
+  var domain = "https://open.fjrst.cn/v1/", // 请求域名
     appId = "", // 应用ID
     appSecret = "", // 应用密钥
     idCard = "", // 身份证号（学员）
@@ -9,7 +9,8 @@
     code = "", // 验证码
     timer = null, // 定时器
     flag = false, // 标记服务是否开启
-    selector = '' // 自定义选择器 
+    selector = '', // 自定义选择器 
+    globalCallback = null // 回调方法
 
   // 页面加载完成后插入弹窗节点
   window.onload = function () {
@@ -26,6 +27,7 @@
       courseId = params.courseId
       control = params.control
       selector = params.selector
+      globalCallback = params.callback
       params.callback && params.callback({
         appId,
         appSecret,
@@ -43,7 +45,7 @@
       }
     },
     // 设置课程id
-    setCouseId: function(id, callback) {
+    setCouseId: function (id, callback) {
       courseId = id
       callback && callback({
         code: 0,
@@ -65,6 +67,7 @@
     // 结束
     stop: function () {
       clearInterval(timer);
+      handleStudyEnd()
     },
     // 提交验证码
     submitCode: function (callback) {
@@ -72,6 +75,7 @@
     },
     // 结束上报
     over: function () {
+      clearInterval(timer);
       handleStudyEnd()
     }
   }
@@ -79,10 +83,13 @@
   // 关闭窗口前触发学习结束上报
   if(window.addEventListener) {
     window.addEventListener("beforeunload", handleStudyEnd, false);
+    window.onbeforeunload = handleStudyEnd;
   } else if(window.attachEvent) {
     window.attachEvent("onbeforeunload", handleStudyEnd);
   } else {
-    if(window.onbeforeunload) window.onbeforeunload = handleStudyEnd;
+    if(window.onbeforeunload) {
+      window.onbeforeunload = handleStudyEnd;
+    }
   }
 
   // 开始操作
@@ -113,13 +120,13 @@
       method: "post",
       dataType: 'json',//返回json数据格式
       data: {
-        idCard: "3501241980xxxxx",
-        appId: "eb7200f7fc45460d96507c4fa03b3934",
-        appSecret: "xxxxxxxx完成申请流程后可查看",
+        idCard,
+        appId,
+        appSecret,
       },
       success: function (res) {
         if(res.code == 0) {
-          token = res.access_token;
+          token = res.data.access_token;
         }
         callback(res)
       },
@@ -137,7 +144,7 @@
   function handleAutoExec(callback) {
     getToken(function (res) {
       callback(res)
-      if(res.code == 500) {
+      if(res.code == 0) {
         handleWatch(callback)
       }
     })
@@ -149,10 +156,11 @@
       url: domain + "heartbeat",
       method: 'get',
       data: {
-        token: token,
-        courseId: courseId,
+        token,
+        courseId,
       },
       success: function (res) {
+        globalCallback(res)
         // 正常
         if(res.code == 0) {
           callback(res)
@@ -189,11 +197,10 @@
         code: code,
       },
       success: function (res) {
+        globalCallback(res)
         handleDialogTrigger()
         if(res.code == 0) {
-          if(!control) {
-            handleAutoExec(callback)
-          }
+          handleAutoExec(callback)
         } else {
           alert(res.msg)
         }
@@ -214,8 +221,8 @@
       http.ajaxRequest({
         url: domain + "studyEnd",
         data: {
-          token: token,
-          courseId: courseId,
+          token,
+          courseId,
         },
         success: function (res) {
           if(res.code == 0) {
@@ -400,13 +407,13 @@
         xhr.abort();
       }
     }, options.timeout)
-    xhr.onreadystatechange = function () {
 
+    xhr.onreadystatechange = function () {
       var status = xhr.status;
       var isSuccess = status >= 200 && status < 300 || status === 304;
       if(xhr.readyState == 4) {
         if(isSuccess) {
-          console.log(xhr.responseXML)
+          console.log('ajax请求成功:', xhr.response)
           if(options.dataType === 'json') {
             var res = JSON.parse(xhr.responseText);
             if(res.code == 401) {
